@@ -1,0 +1,19 @@
+# Image yang wajib sudah ada di laptop sebelum kelas (dipakai prepull.ps1 dan verify-env.ps1).
+# Infra (compose)
+postgres:17-alpine
+apache/kafka:4.2.2
+grafana/otel-lgtm:0.39.0
+ghcr.io/shopify/toxiproxy:2.13.0
+quay.io/keycloak/keycloak:26.7.5
+redis:7.4-alpine
+# Base image JDK (mode perf, L13.1, L21.1, demo)
+eclipse-temurin:21-jdk
+eclipse-temurin:25-jdk
+eclipse-temurin:21-jre
+eclipse-temurin:25-jre
+# Testcontainers
+testcontainers/ryuk:0.14.0
+# Load generator
+alpine/jmeter:5.6.3
+# Dibangun lokal oleh prepull.ps1
+tokoku/wrk2:1.0
