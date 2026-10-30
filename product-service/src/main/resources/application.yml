@@ -12,6 +12,11 @@ spring:
       use:
         header: API-Version
       supported: 1, 2
+  cache:
+    type: caffeine   # paksa provider; jangan Simple (tanpa batas) di produksi
+    cache-names: products
+    # recordStats: tanpa ini metric cache.gets (hit/miss) kosong.
+    caffeine.spec: maximumSize=10000,expireAfterWrite=10m,recordStats
   data:
     web:
       pageable:
@@ -22,6 +27,9 @@ server:
   port: 8081
 
 management:
+  health:
+    redis:
+      enabled: false   # Redis hanya dipakai di profile redis
   # Ekspor OTLP ke grafana/otel-lgtm (compose profil obs). Scaffolding L8.1-B, dibahas di Modul 20.
   otlp:
     metrics:

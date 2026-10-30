@@ -9,6 +9,7 @@ import com.tokoku.product.domain.model.Product;
 import com.tokoku.product.domain.model.ProductUpdated;
 import com.tokoku.product.domain.port.out.ProductStore;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,8 @@ public class ProductService {
 		this.events = events;
 	}
 
+	/** Cache key deterministik dari semua input (slide 144). Pantau hit ratio di metric cache.gets. */
+	@Cacheable(cacheNames = "products", key = "#id")
 	public Product get(long id) {
 		return products.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
 	}
