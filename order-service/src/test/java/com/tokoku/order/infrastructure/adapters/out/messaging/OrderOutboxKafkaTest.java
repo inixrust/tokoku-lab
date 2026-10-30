@@ -24,6 +24,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,9 @@ import static org.mockito.BDDMockito.given;
  */
 @Testcontainers
 @SpringBootTest(properties = "spring.kafka.consumer.group-id=order-service-test")
+// Tutup context selagi broker Testcontainers masih hidup. Tanpa ini, context yang di-cache baru ditutup setelah
+// container berhenti, dan KafkaProducer.close() menunggu 30 s.
+@DirtiesContext
 class OrderOutboxKafkaTest {
 
 	@Container

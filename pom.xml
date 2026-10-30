@@ -22,6 +22,7 @@
 		<spring-cloud.version>2025.1.4</spring-cloud.version>
 		<!-- Integrasi Resilience4j untuk Boot 4 belum resmi: pakai core API (slide 5). -->
 		<resilience4j.version>2.4.0</resilience4j.version>
+		<wiremock.version>3.13.2</wiremock.version>
 	</properties>
 
 	<modules>
@@ -40,6 +41,11 @@
 				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.wiremock</groupId>
+				<artifactId>wiremock-standalone</artifactId>
+				<version>${wiremock.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.resilience4j</groupId>
