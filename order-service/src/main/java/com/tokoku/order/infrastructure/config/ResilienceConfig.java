@@ -9,12 +9,14 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.resilience.annotation.EnableResilientMethods;
 
 /**
  * Resilience4j core tanpa integrasi Boot (slide 5): registry dibuat manual dan metric-nya di-binding ke
  * Micrometer, sehingga state breaker terlihat di Grafana (resilience4j_circuitbreaker_state).
  */
 @Configuration(proxyBeanMethods = false)
+@EnableResilientMethods // @Retryable dan @ConcurrencyLimit Spring Framework 7
 class ResilienceConfig {
 
 	@Bean

@@ -13,8 +13,9 @@ spring:
     clients:
       # Connect pendek (fail fast), read sesuai latency downstream (slide 51).
       connect-timeout: 2s
-      # L10.1: ganti dengan angka dari p99 terukur.
-      read-timeout: 5s
+      # L10.1: diturunkan dari data, bukan disalin. Baseline 50 rps: p99 inventory 4,9 ms, p99.9 6,6 ms.
+      # 500 ms = p99.9 + margin besar (GC pause, cold start), tetap jauh di bawah toleransi user.
+      read-timeout: 500ms
   kafka:
     bootstrap-servers: localhost:9092
     producer:

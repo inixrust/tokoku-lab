@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.tokoku.order.domain.exception.InsufficientStockException;
 import com.tokoku.order.domain.exception.OrderNotFoundException;
+import com.tokoku.order.payment.domain.IdempotencyException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,19 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		ProblemDetail pd = problem(HttpStatus.CONFLICT, "insufficient-stock", "Insufficient stock",
 				"Not enough stock for product " + ex.productId(), "INSUFFICIENT_STOCK");
 		pd.setProperty("productId", ex.productId());
+		return pd;
+	}
+
+	/** Idempotency-Key dipakai ulang dengan payload berbeda: 422; diproses paralel: 409 (slide 81). */
+	@ExceptionHandler(IdempotencyException.class)
+	ProblemDetail handleIdempotency(IdempotencyException ex) {
+		ProblemDetail pd = switch (ex) {
+			case IdempotencyException.KeyReused reused -> problem(HttpStatus.UNPROCESSABLE_CONTENT,
+					"idempotency-key-reused", "Idempotency-Key reused", ex.getMessage(), "IDEMPOTENCY_KEY_REUSED");
+			case IdempotencyException.Conflict conflict -> problem(HttpStatus.CONFLICT, "idempotency-conflict",
+					"Concurrent request", ex.getMessage(), "IDEMPOTENCY_CONFLICT");
+		};
+		pd.setProperty("idempotencyKey", ex.key());
 		return pd;
 	}
 
