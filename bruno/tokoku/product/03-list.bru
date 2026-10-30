@@ -1,0 +1,23 @@
+meta {
+  name: GET list (PagedModel)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{productUrl}}/api/products?size=5
+  body: none
+  auth: none
+}
+
+headers {
+  API-Version: 1
+}
+
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+}

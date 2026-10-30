@@ -1,0 +1,26 @@
+meta {
+  name: 404 product tidak ada
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{productUrl}}/api/products/999
+  body: none
+  auth: none
+}
+
+headers {
+  API-Version: 1
+}
+
+
+tests {
+  test("status 404", function() {
+    expect(res.status).to.equal(404);
+  });
+  test("application/problem+json dengan status = status HTTP", function() {
+    expect(res.headers['content-type']).to.contain('application/problem+json');
+    expect(res.body.status).to.equal(res.status);
+  });
+}

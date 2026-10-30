@@ -7,6 +7,11 @@ spring:
     password: product_pw
   jpa:
     open-in-view: false
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+        serialization-mode: via-dto
 
 server:
   port: 8081

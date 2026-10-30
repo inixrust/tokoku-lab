@@ -58,3 +58,4 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | Hari | Lab |
 |---|---|
 | 1 | [L3.1](docs/labs/L3.1.md) product-service di Boot 4.1 |
+| 2 | [L5.1](docs/labs/L5.1.md) API product berversi + RFC 9457 |
