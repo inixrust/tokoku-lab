@@ -25,7 +25,7 @@
 	</properties>
 
 	<modules>
-		<!-- L3.1: tambahkan <module>product-service</module> di sini -->
+		<module>product-service</module>
 	</modules>
 
 	<dependencyManagement>

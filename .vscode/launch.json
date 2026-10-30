@@ -1,4 +1,23 @@
 {
   "version": "0.2.0",
-  "configurations": []
+  "configurations": [
+    {
+      "type": "java",
+      "name": "product-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.product.ProductServiceApplication",
+      "projectName": "product-service",
+      "cwd": "${workspaceFolder}/product-service"
+    },
+    {
+      "type": "java",
+      "name": "product-service (L3.1 override)",
+      "request": "launch",
+      "mainClass": "com.tokoku.product.ProductServiceApplication",
+      "projectName": "product-service",
+      "cwd": "${workspaceFolder}/product-service",
+      "args": "--server.port=7070",
+      "env": { "SERVER_PORT": "9090" }
+    }
+  ]
 }

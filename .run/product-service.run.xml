@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="product-service" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.tokoku.product.ProductServiceApplication" />
+    <module name="product-service" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/product-service" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
