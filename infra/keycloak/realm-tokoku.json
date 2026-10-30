@@ -1,0 +1,208 @@
+{
+  "realm": "tokoku",
+  "displayName": "TokoKu (lab)",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "defaultDefaultClientScopes": ["basic", "profile"],
+  "defaultOptionalClientScopes": [],
+  "clientScopes": [
+    {
+      "name": "basic",
+      "description": "Klaim dasar: sub dan auth_time. Wajib ada karena scope default tidak dibuat saat realm diimpor dengan clientScopes sendiri.",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "config": { "access.token.claim": "true", "introspection.token.claim": "true" }
+        },
+        {
+          "name": "auth_time",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usersessionmodel-note-mapper",
+          "config": {
+            "user.session.note": "AUTH_TIME", "claim.name": "auth_time", "jsonType.label": "long",
+            "access.token.claim": "true", "id.token.claim": "true", "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "username", "claim.name": "preferred_username", "jsonType.label": "String",
+            "access.token.claim": "true", "id.token.claim": "true", "introspection.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "orders.read",
+      "description": "Membaca order milik sendiri",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience order-service",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "order-service",
+            "access.token.claim": "true", "id.token.claim": "false", "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "orders.write",
+      "description": "Membuat order",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience order-service",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "order-service",
+            "access.token.claim": "true", "id.token.claim": "false", "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "payments.write",
+      "description": "Mencatat pembayaran (service-to-service)",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience order-service",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "order-service",
+            "access.token.claim": "true", "id.token.claim": "false", "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "inventory.read",
+      "description": "Scope untuk API lain: token ini TIDAK berisi aud order-service (D11.3)",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true", "display.on.consent.screen": "false" },
+      "protocolMappers": [
+        {
+          "name": "audience inventory-service",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "inventory-service",
+            "access.token.claim": "true", "id.token.claim": "false", "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "tokoku-web",
+      "name": "TokoKu web (user, authorization code + PKCE)",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "http://localhost:3333/*",
+        "https://oauth.pstmn.io/v1/callback",
+        "https://oauth.usebruno.com/callback"
+      ],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "1800",
+        "post.logout.redirect.uris": "+"
+      },
+      "defaultClientScopes": ["basic", "profile", "orders.read", "orders.write"],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "tokoku-loadtest",
+      "name": "Otomasi / load test (client credentials, hanya payments.write)",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "tokoku-loadtest-secret",
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "attributes": { "access.token.lifespan": "1800" },
+      "defaultClientScopes": ["basic", "payments.write"],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "tokoku-other-api",
+      "name": "Client untuk API lain (D11.3: token dengan aud salah)",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "tokoku-other-api-secret",
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["basic", "inventory.read"],
+      "optionalClientScopes": []
+    }
+  ],
+  "users": [
+    {
+      "id": "7f2c1a4e-0b1d-4c55-9a6e-a11ce0000001",
+      "username": "alice",
+      "email": "alice@tokoku.example",
+      "firstName": "Alice",
+      "lastName": "Customer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "alice", "temporary": false }]
+    },
+    {
+      "id": "7f2c1a4e-0b1d-4c55-9a6e-b0b000000002",
+      "username": "bob",
+      "email": "bob@tokoku.example",
+      "firstName": "Bob",
+      "lastName": "Customer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "bob", "temporary": false }]
+    },
+    {
+      "username": "service-account-tokoku-loadtest",
+      "enabled": true,
+      "serviceAccountClientId": "tokoku-loadtest"
+    },
+    {
+      "username": "service-account-tokoku-other-api",
+      "enabled": true,
+      "serviceAccountClientId": "tokoku-other-api"
+    }
+  ]
+}

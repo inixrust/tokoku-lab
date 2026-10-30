@@ -77,5 +77,28 @@ services:
     volumes:
       - ./toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro
 
+  # Keycloak (realm tokoku diimpor otomatis). Admin console: http://localhost:8180 (admin/admin).
+  # KC_HOSTNAME membuat claim iss selalu http://localhost:8180/realms/tokoku, juga saat diakses dari container
+  # (mode perf memakai jwk-set-uri internal http://keycloak:8080/...).
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.5
+    profiles: [security]
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: http://localhost:8180
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-tokoku.json:/opt/keycloak/data/import/realm-tokoku.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
 volumes:
   pgdata:

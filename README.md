@@ -65,3 +65,4 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 3 | [L8.1-B](docs/labs/L8.1-B.md) notification-service + metric |
 | 3 (PR) | L9.1 Eureka, opsional: tag `L9.1-start` (panduan `docs/labs/L9.1.md` ada di tag itu) |
 | 4 | [L10.1](docs/labs/L10.1.md) Downstream yang lambat (timeout, retry, breaker) |
+| 4 | [L11.1](docs/labs/L11.1.md) Resource server + uji BOLA |

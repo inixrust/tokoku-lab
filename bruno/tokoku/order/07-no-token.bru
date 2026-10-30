@@ -1,0 +1,17 @@
+meta {
+  name: 401 tanpa token
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{orderUrl}}/api/orders
+  body: none
+  auth: none
+}
+
+tests {
+  test("401", function() {
+    expect(res.status).to.equal(401);
+  });
+}

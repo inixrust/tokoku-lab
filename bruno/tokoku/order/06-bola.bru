@@ -1,0 +1,25 @@
+meta {
+  name: BOLA - alice membaca order 1 (milik bob)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{orderUrl}}/api/orders/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{aliceToken}}
+}
+
+docs {
+  L11.1: sebelum perbaikan hasilnya 200 (data bob bocor). Setelah query dibatasi pemilik: 404.
+}
+
+tests {
+  test("404 setelah perbaikan BOLA", function() {
+    expect(res.status).to.equal(404);
+  });
+}

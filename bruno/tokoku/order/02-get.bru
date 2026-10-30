@@ -1,13 +1,17 @@
 meta {
-  name: get order 1
+  name: get order 2 (milik alice)
   type: http
   seq: 2
 }
 
 get {
-  url: {{orderUrl}}/api/orders/1
+  url: {{orderUrl}}/api/orders/2
   body: none
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{aliceToken}}
 }
 
 tests {
