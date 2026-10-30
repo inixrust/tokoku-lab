@@ -65,9 +65,23 @@ management:
 
 tokoku:
   inventory:
-    base-url: http://localhost:8083
+    # Nama service di Eureka, bukan host:port. Spring Cloud LoadBalancer memilih instance.
+    base-url: http://inventory-service
 
 logging:
   level:
     # Hibernate 7: ringkasan "Session Metrics" (jumlah JDBC statement) ditulis di level DEBUG.
     org.hibernate.session.metrics: debug
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    registry-fetch-interval-seconds: 5
+  instance:
+    # Dua instance di host yang sama butuh instance-id berbeda.
+    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true
+    # Lab: heartbeat cepat agar instance mati segera dikeluarkan (default 30 s / 90 s).
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10

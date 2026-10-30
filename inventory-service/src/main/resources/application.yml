@@ -26,6 +26,9 @@ management:
         url: http://localhost:4318/v1/metrics
         step: 10s
   opentelemetry:
+    # Pembeda antar-instance di Prometheus/Tempo (label instance). HOSTNAME di container, COMPUTERNAME di Windows.
+    resource-attributes:
+      service.instance.id: ${HOSTNAME:${COMPUTERNAME:local}}:${server.port}
     tracing:
       export:
         otlp:
@@ -51,3 +54,16 @@ inventory:
   # Mode lambat untuk lab (L8.1-A, capstone). Bisa juga diubah saat runtime:
   #   curl.exe -X PUT "localhost:8083/api/admin/simulated-delay?value=8s"
   simulated-delay: 0s
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    registry-fetch-interval-seconds: 5
+  instance:
+    # Dua instance di host yang sama butuh instance-id berbeda.
+    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true
+    # Lab: heartbeat cepat agar instance mati segera dikeluarkan (default 30 s / 90 s).
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
