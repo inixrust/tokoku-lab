@@ -17,7 +17,7 @@ public interface OrderStore {
 
 	Optional<Order> findByIdAndCustomer(long id, String customerId);
 
-	Page<Order> findAllByCustomer(String customerId, Pageable pageable);
+	Page<Order> findAllByCustomer(String customerId, OrderStatus status, Pageable pageable);
 
 	/** Mengubah status order yang sudah ada (optimistic locking lewat @Version). */
 	void updateStatus(long orderId, OrderStatus status);

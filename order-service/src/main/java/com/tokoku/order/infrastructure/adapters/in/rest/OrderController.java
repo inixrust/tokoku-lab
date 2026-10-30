@@ -7,6 +7,7 @@ import com.tokoku.order.application.port.in.PlaceOrderUseCase;
 import com.tokoku.order.application.port.in.PlaceOrderUseCase.PlaceOrderCommand;
 import com.tokoku.order.domain.model.Order;
 import com.tokoku.order.domain.model.OrderLine;
+import com.tokoku.order.domain.model.OrderStatus;
 import com.tokoku.order.infrastructure.adapters.in.rest.dto.OrderResponse;
 import com.tokoku.order.infrastructure.adapters.in.rest.dto.PlaceOrderRequest;
 import jakarta.validation.Valid;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Controller tipis: validasi request, panggil use case, map DTO (slide 25). */
@@ -53,10 +55,10 @@ class OrderController {
 	}
 
 	@GetMapping
-	PagedModel<OrderResponse> list(
+	PagedModel<OrderResponse> list(@RequestParam(required = false) OrderStatus status,
 			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
 			@AuthenticationPrincipal Jwt jwt) {
-		return new PagedModel<>(getOrder.list(jwt.getSubject(), pageable).map(OrderResponse::from));
+		return new PagedModel<>(getOrder.list(jwt.getSubject(), status, pageable).map(OrderResponse::from));
 	}
 
 }

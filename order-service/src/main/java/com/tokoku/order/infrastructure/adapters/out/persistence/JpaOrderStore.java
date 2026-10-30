@@ -36,8 +36,10 @@ class JpaOrderStore implements OrderStore {
 	}
 
 	@Override
-	public Page<Order> findAllByCustomer(String customerId, Pageable pageable) {
-		return repository.findByCustomerId(customerId, pageable).map(OrderMapper::toDomain);
+	public Page<Order> findAllByCustomer(String customerId, OrderStatus status, Pageable pageable) {
+		Page<OrderEntity> page = (status != null) ? repository.findByCustomerIdAndStatus(customerId, status, pageable)
+				: repository.findByCustomerId(customerId, pageable);
+		return page.map(OrderMapper::toDomain);
 	}
 
 	@Override

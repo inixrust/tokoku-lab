@@ -2,10 +2,33 @@
 #   docker compose -f infra/compose.yaml --profile db up -d
 name: tokoku
 
+# Bagian bersama aplikasi pada mode perf (profil apps, Hari 5-6). Batas cpus/mem_limit tetap agar hasil bisa diulang.
+x-app: &app
+  profiles: [apps]
+  cpus: 2
+  mem_limit: 1g
+  stop_grace_period: 40s
+  environment: &app-env
+    SERVER_PORT: "8080"
+    MANAGEMENT_SERVER_PORT: "8081"
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tokoku
+    SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://lgtm:4318/v1/metrics
+    MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://lgtm:4318/v1/traces
+    # Kosong = default JVM (heap 25% dari limit). Diatur di L13.1 / capstone.
+    JAVA_TOOL_OPTIONS: ""
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+
 services:
   postgres:
     image: postgres:17-alpine
     profiles: [db]
+    # Dibatasi 2 CPU agar efek ukuran pool terlihat (L15.1, capstone).
+    cpus: 2
     environment:
       POSTGRES_DB: tokoku
       POSTGRES_USER: postgres
@@ -100,5 +123,65 @@ services:
       timeout: 5s
       retries: 40
 
+  # ---------------------------------------------------------------- mode perf (profil apps)
+  # Build jar dulu: .\mvnw.cmd package -DskipTests, lalu: docker compose ... --profile apps up -d --build
+  product-service:
+    <<: *app
+    build: { context: ../product-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/product-service:perf
+    ports: ["8081:8080", "9081:8081"]
+    environment:
+      <<: *app-env
+      SPRING_DATASOURCE_USERNAME: product_user
+
+  inventory-service:
+    <<: *app
+    build: { context: ../inventory-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/inventory-service:perf
+    ports: ["8083:8080", "9083:8081"]
+
+  order-service:
+    <<: *app
+    build: { context: ../order-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/order-service:perf
+    ports: ["8082:8080", "9082:8081"]
+    environment:
+      <<: *app-env
+      TOKOKU_INVENTORY_BASE_URL: http://inventory-service:8080
+      # iss tetap http://localhost:8180/realms/tokoku (sama dengan token); kunci diambil lewat jaringan internal.
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/tokoku/protocol/openid-connect/certs
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+      inventory-service: { condition: service_started }
+
+  notification-service:
+    <<: *app
+    cpus: 1
+    mem_limit: 512m
+    build: { context: ../notification-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/notification-service:perf
+    ports: ["8084:8080", "9084:8081"]
+    depends_on:
+      kafka: { condition: service_healthy }
+
+  # L13.1: product-service di JDK 25 untuk mengukur AOT cache (JEP 483/514/515). Dijalankan lewat scripts/aot-cache.ps1.
+  product-service-jdk25:
+    <<: *app
+    profiles: [aot]
+    build:
+      context: ../product-service
+      dockerfile: ../infra/docker/perf.Dockerfile
+      args: { JDK: "25" }
+    image: tokoku/product-service:jdk25
+    environment:
+      <<: *app-env
+    volumes:
+      - aot:/aot
+    depends_on:
+      postgres: { condition: service_healthy }
+
 volumes:
   pgdata:
+  aot:

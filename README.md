@@ -67,3 +67,7 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 4 | [L10.1](docs/labs/L10.1.md) Downstream yang lambat (timeout, retry, breaker) |
 | 4 | [L11.1](docs/labs/L11.1.md) Resource server + uji BOLA |
 | 4 | [L19.1](docs/labs/L19.1.md) Test suite order-service |
+| 5 | [Mode perf](docs/labs/mode-perf.md): checkpoint `L12-perf` (L12.1, L12.2, L13.1) |
+| 5 | [L12.1](docs/labs/L12.1.md) Baseline performa (wrk2, JFR) |
+| 5 | [L12.2](docs/labs/L12.2.md) JMeter open model |
+| 5 | [L13.1](docs/labs/L13.1.md) Heap, GC, AOT cache |

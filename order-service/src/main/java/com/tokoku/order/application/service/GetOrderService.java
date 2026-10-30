@@ -3,6 +3,7 @@ package com.tokoku.order.application.service;
 import com.tokoku.order.application.port.in.GetOrderUseCase;
 import com.tokoku.order.domain.exception.OrderNotFoundException;
 import com.tokoku.order.domain.model.Order;
+import com.tokoku.order.domain.model.OrderStatus;
 import com.tokoku.order.domain.port.out.OrderStore;
 
 import org.springframework.data.domain.Page;
@@ -26,8 +27,8 @@ class GetOrderService implements GetOrderUseCase {
 	}
 
 	@Override
-	public Page<Order> list(String customerId, Pageable pageable) {
-		return orders.findAllByCustomer(customerId, pageable);
+	public Page<Order> list(String customerId, OrderStatus status, Pageable pageable) {
+		return orders.findAllByCustomer(customerId, status, pageable);
 	}
 
 }
