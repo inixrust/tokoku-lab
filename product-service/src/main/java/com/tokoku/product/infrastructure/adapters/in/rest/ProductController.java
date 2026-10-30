@@ -8,6 +8,7 @@ import com.tokoku.product.domain.model.Product;
 import com.tokoku.product.infrastructure.adapters.in.rest.dto.CreateProductRequest;
 import com.tokoku.product.infrastructure.adapters.in.rest.dto.ProductV1;
 import com.tokoku.product.infrastructure.adapters.in.rest.dto.ProductV2;
+import com.tokoku.product.infrastructure.adapters.in.rest.dto.UpdateProductRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,6 +55,11 @@ class ProductController {
 	@GetMapping(path = "/search", version = "1+")
 	List<ProductV1> search(@RequestParam @Size(min = 3) String q) {
 		return products.search(q).stream().map(ProductV1::from).toList();
+	}
+
+	@PutMapping(path = "/{id}", version = "1+")
+	ProductV1 update(@PathVariable long id, @Valid @RequestBody UpdateProductRequest request) {
+		return ProductV1.from(products.update(id, request.name(), request.price()));
 	}
 
 	@PostMapping(version = "1+")

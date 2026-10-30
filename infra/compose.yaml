@@ -13,6 +13,7 @@ x-app: &app
     MANAGEMENT_SERVER_PORT: "8081"
     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tokoku
     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    SPRING_DATA_REDIS_HOST: redis
     MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://lgtm:4318/v1/metrics
     MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://lgtm:4318/v1/traces
     # Kosong = default JVM (heap 25% dari limit). Diatur di L13.1 / capstone.
@@ -86,6 +87,18 @@ services:
       - ./grafana/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/tokoku.yaml:ro
       - ./grafana/dashboards:/tokoku/dashboards:ro
 
+  # L17.1: distributed cache (opsional/demo). Testcontainers hanya untuk test; dua instance aplikasi butuh Redis yang hidup terus.
+  redis:
+    image: redis:7.4-alpine
+    profiles: [cache]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   # Chaos: proxy di depan inventory-service (yang jalan di host). Atur toxic lewat API 8474,
   # mis. scripts/chaos.ps1 -Latency 3000
   toxiproxy:
@@ -133,6 +146,15 @@ services:
     environment:
       <<: *app-env
       SPRING_DATASOURCE_USERNAME: product_user
+
+  # L17.1: instance kedua product-service (port 8091) untuk mengamati stale data di local cache.
+  product-service-2:
+    <<: *app
+    profiles: [scale]
+    image: tokoku/product-service:perf
+    ports: ["8091:8080", "9091:8081"]
+    depends_on:
+      postgres: { condition: service_healthy }
 
   inventory-service:
     <<: *app

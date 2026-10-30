@@ -6,8 +6,10 @@ import java.util.List;
 import com.tokoku.product.domain.exception.DuplicateSkuException;
 import com.tokoku.product.domain.exception.ProductNotFoundException;
 import com.tokoku.product.domain.model.Product;
+import com.tokoku.product.domain.model.ProductUpdated;
 import com.tokoku.product.domain.port.out.ProductStore;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,8 +21,11 @@ public class ProductService {
 
 	private final ProductStore products;
 
-	public ProductService(ProductStore products) {
+	private final ApplicationEventPublisher events;
+
+	public ProductService(ProductStore products, ApplicationEventPublisher events) {
 		this.products = products;
+		this.events = events;
 	}
 
 	public Product get(long id) {
@@ -33,6 +38,14 @@ public class ProductService {
 
 	public List<Product> search(String query) {
 		return products.searchByName(query);
+	}
+
+	/** L17.1: perubahan harga menerbitkan ProductUpdated (dipakai untuk invalidation cache). */
+	@Transactional
+	public Product update(long id, String name, BigDecimal price) {
+		Product updated = products.update(id, name, price);
+		events.publishEvent(new ProductUpdated(id));
+		return updated;
 	}
 
 	@Transactional

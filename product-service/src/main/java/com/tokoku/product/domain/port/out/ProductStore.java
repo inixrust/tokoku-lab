@@ -1,5 +1,6 @@
 package com.tokoku.product.domain.port.out;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +20,8 @@ public interface ProductStore {
 	boolean existsBySku(String sku);
 
 	Product save(Product product);
+
+	/** Mengubah nama dan harga product yang sudah ada. */
+	Product update(long id, String name, BigDecimal price);
 
 }

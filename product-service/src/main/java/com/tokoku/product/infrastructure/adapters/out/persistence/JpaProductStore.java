@@ -1,8 +1,10 @@
 package com.tokoku.product.infrastructure.adapters.out.persistence;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.tokoku.product.domain.exception.ProductNotFoundException;
 import com.tokoku.product.domain.model.Product;
 import com.tokoku.product.domain.port.out.ProductStore;
 
@@ -39,6 +41,13 @@ class JpaProductStore implements ProductStore {
 	@Override
 	public boolean existsBySku(String sku) {
 		return repository.existsBySku(sku);
+	}
+
+	@Override
+	public Product update(long id, String name, BigDecimal price) {
+		ProductEntity entity = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+		entity.update(name, price);
+		return entity.toDomain();
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "product")
@@ -29,6 +30,9 @@ class ProductEntity {
 	@Column(nullable = false, precision = 12, scale = 2)
 	private BigDecimal price;
 
+	@Version
+	private long version;
+
 	protected ProductEntity() {
 	}
 
@@ -39,6 +43,11 @@ class ProductEntity {
 		entity.name = product.name();
 		entity.price = product.price();
 		return entity;
+	}
+
+	void update(String name, BigDecimal price) {
+		this.name = name;
+		this.price = price;
 	}
 
 	Product toDomain() {
