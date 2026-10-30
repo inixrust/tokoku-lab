@@ -63,3 +63,5 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 2 | [L8.1-A](docs/labs/L8.1-A.md) order → inventory via `@HttpExchange` |
 | 3 | [L7.1](docs/labs/L7.1.md) Saga order → inventory (outbox, Kafka) |
 | 3 | [L8.1-B](docs/labs/L8.1-B.md) notification-service + metric |
+| 3 (PR) | L9.1 Eureka, opsional: tag `L9.1-start` (panduan `docs/labs/L9.1.md` ada di tag itu) |
+| 4 | [L10.1](docs/labs/L10.1.md) Downstream yang lambat (timeout, retry, breaker) |

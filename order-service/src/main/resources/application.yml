@@ -13,6 +13,7 @@ spring:
     clients:
       # Connect pendek (fail fast), read sesuai latency downstream (slide 51).
       connect-timeout: 2s
+      # L10.1: ganti dengan angka dari p99 terukur.
       read-timeout: 5s
   kafka:
     bootstrap-servers: localhost:9092
@@ -65,7 +66,9 @@ management:
 
 tokoku:
   inventory:
-    base-url: http://localhost:8083
+    # L10.1: lewat Toxiproxy (compose profil chaos) agar latency/gangguan bisa disuntikkan.
+    # Tanpa Toxiproxy: http://localhost:8083
+    base-url: http://localhost:18083
 
 logging:
   level:
