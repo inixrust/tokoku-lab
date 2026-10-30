@@ -50,5 +50,18 @@ services:
       timeout: 10s
       retries: 30
 
+  # OTel Collector + Prometheus + Tempo + Loki + Grafana dalam satu container.
+  # Grafana: http://localhost:3000 (admin/admin). OTLP: 4317 (gRPC), 4318 (HTTP).
+  lgtm:
+    image: grafana/otel-lgtm:0.39.0
+    profiles: [obs]
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./grafana/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/tokoku.yaml:ro
+      - ./grafana/dashboards:/tokoku/dashboards:ro
+
 volumes:
   pgdata:

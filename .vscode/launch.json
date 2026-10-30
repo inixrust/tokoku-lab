@@ -27,6 +27,14 @@
     },
     {
       "type": "java",
+      "name": "notification-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.notification.NotificationServiceApplication",
+      "projectName": "notification-service",
+      "cwd": "${workspaceFolder}/notification-service"
+    },
+    {
+      "type": "java",
       "name": "product-service (L3.1 override)",
       "request": "launch",
       "mainClass": "com.tokoku.product.ProductServiceApplication",

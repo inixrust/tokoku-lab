@@ -28,7 +28,7 @@ Bila PowerShell menolak skrip: `powershell -ExecutionPolicy Bypass -File .\scrip
 docker compose -f infra/compose.yaml --profile db up -d
 ```
 
-Profil per hari ada di panduan lab. Service dijalankan dari IDE (IntelliJ: folder `.run/`, VS Code: `.vscode/launch.json`).
+Profil per hari ada di panduan lab. Grafana (profil `obs`): <http://localhost:3000>, admin/admin. Service dijalankan dari IDE (IntelliJ: folder `.run/`, VS Code: `.vscode/launch.json`).
 
 | Service | Port app / management | Schema / user DB |
 |---|---|---|
@@ -62,3 +62,4 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 2 | [L6.1](docs/labs/L6.1.md) Persistence order-service |
 | 2 | [L8.1-A](docs/labs/L8.1-A.md) order → inventory via `@HttpExchange` |
 | 3 | [L7.1](docs/labs/L7.1.md) Saga order → inventory (outbox, Kafka) |
+| 3 | [L8.1-B](docs/labs/L8.1-B.md) notification-service + metric |
