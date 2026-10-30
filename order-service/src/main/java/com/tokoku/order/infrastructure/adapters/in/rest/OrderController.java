@@ -16,6 +16,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,21 +40,23 @@ class OrderController {
 	}
 
 	@PostMapping
-	ResponseEntity<OrderResponse> place(@Valid @RequestBody PlaceOrderRequest request) {
+	ResponseEntity<OrderResponse> place(@Valid @RequestBody PlaceOrderRequest request,
+			@AuthenticationPrincipal Jwt jwt) {
 		var lines = request.lines().stream().map(line -> new OrderLine(line.productId(), line.quantity())).toList();
-		Order order = placeOrder.place(new PlaceOrderCommand(request.customerId(), lines));
+		Order order = placeOrder.place(new PlaceOrderCommand(jwt.getSubject(), lines));
 		return ResponseEntity.created(URI.create("/api/orders/" + order.id())).body(OrderResponse.from(order));
 	}
 
 	@GetMapping("/{id}")
-	OrderResponse get(@PathVariable long id) {
-		return OrderResponse.from(getOrder.get(id));
+	OrderResponse get(@PathVariable long id, @AuthenticationPrincipal Jwt jwt) {
+		return OrderResponse.from(getOrder.get(id, jwt.getSubject()));
 	}
 
 	@GetMapping
 	PagedModel<OrderResponse> list(
-			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-		return new PagedModel<>(getOrder.list(pageable).map(OrderResponse::from));
+			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+			@AuthenticationPrincipal Jwt jwt) {
+		return new PagedModel<>(getOrder.list(jwt.getSubject(), pageable).map(OrderResponse::from));
 	}
 
 }

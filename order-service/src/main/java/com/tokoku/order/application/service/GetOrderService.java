@@ -21,13 +21,13 @@ class GetOrderService implements GetOrderUseCase {
 	}
 
 	@Override
-	public Order get(long id) {
-		return orders.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+	public Order get(long id, String customerId) {
+		return orders.findByIdAndCustomer(id, customerId).orElseThrow(() -> new OrderNotFoundException(id));
 	}
 
 	@Override
-	public Page<Order> list(Pageable pageable) {
-		return orders.findAll(pageable);
+	public Page<Order> list(String customerId, Pageable pageable) {
+		return orders.findAllByCustomer(customerId, pageable);
 	}
 
 }

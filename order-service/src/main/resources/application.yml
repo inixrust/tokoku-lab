@@ -16,6 +16,14 @@ spring:
       # L10.1: diturunkan dari data, bukan disalin. Baseline 50 rps: p99 inventory 4,9 ms, p99.9 6,6 ms.
       # 500 ms = p99.9 + margin besar (GC pause, cold start), tetap jauh di bawah toleransi user.
       read-timeout: 500ms
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Harus sama persis dengan klaim iss di token (KC_HOSTNAME di compose).
+          issuer-uri: http://localhost:8180/realms/tokoku
+          audiences: order-service   # tolak token untuk API lain
+          jws-algorithms: RS256      # tanpa alg none / HMAC
   kafka:
     bootstrap-servers: localhost:9092
     producer:

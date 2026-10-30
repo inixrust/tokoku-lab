@@ -7,8 +7,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface GetOrderUseCase {
 
-	Order get(long id);
+	/** Ownership di query (slide 91): order milik orang lain diperlakukan sebagai tidak ada (404). */
+	Order get(long id, String customerId);
 
-	Page<Order> list(Pageable pageable);
+	Page<Order> list(String customerId, Pageable pageable);
 
 }
