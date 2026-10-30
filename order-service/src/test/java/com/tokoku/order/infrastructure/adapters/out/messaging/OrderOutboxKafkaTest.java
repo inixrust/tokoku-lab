@@ -15,7 +15,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -36,7 +35,6 @@ import static org.mockito.BDDMockito.given;
  * L7.1 langkah 2: order + outbox dalam satu transaction, lalu relay mengirim OrderPlaced ke Kafka.
  * Database dan broker berasal dari Testcontainers, bukan dari compose.
  */
-@Disabled("L7.1: hapus @Disabled setelah outbox dan OutboxRelay order-service selesai")
 @Testcontainers
 @SpringBootTest(properties = "spring.kafka.consumer.group-id=order-service-test")
 class OrderOutboxKafkaTest {

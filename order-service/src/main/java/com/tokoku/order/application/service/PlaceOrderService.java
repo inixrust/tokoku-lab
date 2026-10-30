@@ -5,6 +5,7 @@ import com.tokoku.order.domain.exception.InsufficientStockException;
 import com.tokoku.order.domain.model.Availability;
 import com.tokoku.order.domain.model.Order;
 import com.tokoku.order.domain.model.OrderLine;
+import com.tokoku.order.domain.port.out.OrderEvents;
 import com.tokoku.order.domain.port.out.OrderStore;
 import com.tokoku.order.domain.port.out.StockCheck;
 
@@ -16,12 +17,15 @@ class PlaceOrderService implements PlaceOrderUseCase {
 
 	private final OrderStore orders;
 
+	private final OrderEvents events;
+
 	private final StockCheck stock;
 
 	private final TransactionTemplate transaction;
 
-	PlaceOrderService(OrderStore orders, StockCheck stock, TransactionTemplate transaction) {
+	PlaceOrderService(OrderStore orders, OrderEvents events, StockCheck stock, TransactionTemplate transaction) {
 		this.orders = orders;
+		this.events = events;
 		this.stock = stock;
 		this.transaction = transaction;
 	}
@@ -35,8 +39,12 @@ class PlaceOrderService implements PlaceOrderUseCase {
 				throw new InsufficientStockException(line.productId());
 			}
 		}
-		// Write transaction sesempit mungkin (slide 46).
-		return transaction.execute(status -> orders.save(order));
+		// Order + event OrderPlaced di outbox dalam SATU local transaction (slide 59): commit sekali, atomik.
+		return transaction.execute(status -> {
+			Order saved = orders.save(order);
+			events.orderPlaced(saved);
+			return saved;
+		});
 	}
 
 }
