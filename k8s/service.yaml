@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  # NodePort: di Docker Desktop langsung terbuka di localhost:30081.
+  type: NodePort
+  selector:
+    app: product-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      nodePort: 30081

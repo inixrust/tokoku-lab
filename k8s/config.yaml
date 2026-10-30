@@ -1,0 +1,27 @@
+# Konfigurasi product-service di Kubernetes Docker Desktop (context docker-desktop).
+# Satu artifact untuk semua environment: perbedaan lewat environment dan config tree (slide 72).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: product-service
+data:
+  SERVER_PORT: "8080"
+  MANAGEMENT_SERVER_PORT: "8081"
+  # PostgreSQL tetap di compose (host). Docker Desktop meneruskan host.docker.internal ke host.
+  SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/tokoku
+  # Nilai diambil dari file secret yang di-mount sebagai config tree (/etc/config/db-username, db-password).
+  SPRING_CONFIG_IMPORT: optional:configtree:/etc/config/
+  SPRING_DATASOURCE_USERNAME: ${db-username}
+  SPRING_DATASOURCE_PASSWORD: ${db-password}
+  MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://host.docker.internal:4318/v1/metrics
+  MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
+---
+# Secret lab. Di produksi: secret manager / External Secrets, bukan file di repo.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: product-db
+type: Opaque
+stringData:
+  db-username: product_user
+  db-password: product_pw

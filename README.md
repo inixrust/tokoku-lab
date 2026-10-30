@@ -73,3 +73,4 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 5 | [L13.1](docs/labs/L13.1.md) Heap, GC, AOT cache |
 | 5 | [L15.1](docs/labs/L15.1.md) N+1 dan ukuran pool |
 | 6 | [L17.1](docs/labs/L17.1.md) Caffeine vs Redis |
+| 6 | [L21.1](docs/labs/L21.1.md) Siap produksi (image, probe, Kubernetes) |
