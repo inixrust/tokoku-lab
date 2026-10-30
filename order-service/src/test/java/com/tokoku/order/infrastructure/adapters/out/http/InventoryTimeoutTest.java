@@ -1,6 +1,9 @@
 package com.tokoku.order.infrastructure.adapters.out.http;
 
+import java.time.Duration;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.tokoku.order.domain.model.Availability;
 import com.tokoku.order.domain.port.out.StockCheck;
 import com.tokoku.order.infrastructure.config.InventoryProps;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -8,6 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -26,21 +30,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.web.client.ResourceAccessException;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
- * L19.1 langkah 4: inventory lambat (WireMock) → timeout, lalu fallback.
- * Kerangka sudah menyiapkan WireMock dan context minimal (hanya HTTP client + adapter, tanpa DB/Kafka).
- *
- * <p>TODO:
- * <ul>
- * <li>Stub GET /api/inventory/.. dengan withFixedDelay(6000): InventoryClient melempar ResourceAccessException
- * setelah sekitar 5 s (read-timeout).</li>
- * <li>Breaker OPEN (breakers.circuitBreaker("inventory").transitionToOpenState()): adapter mengembalikan
- * Availability.UNKNOWN tanpa memanggil WireMock sama sekali.</li>
- * <li>Hapus fallback di InventoryStockAdapter, lalu pastikan test kedua GAGAL.</li>
- * </ul>
+ * Jalur gagal downstream (slide 101): inventory (WireMock) lambat 6 s, read-timeout 5 s, lalu fallback saat
+ * breaker OPEN. Context minimal: hanya HTTP client + adapter, tanpa database atau Kafka.
  */
 @SpringBootTest(classes = InventoryTimeoutTest.HttpOnly.class,
 		properties = { "spring.http.clients.connect-timeout=1s",
@@ -78,6 +80,37 @@ class InventoryTimeoutTest {
 	void reset() {
 		inventory.resetAll();
 		breakers.circuitBreaker("inventory").reset();
+	}
+
+	@Test
+	void slowInventoryTimesOutAfterReadTimeout() {
+		inventory.stubFor(get(urlPathMatching("/api/inventory/.*")).willReturn(aResponse().withFixedDelay(6000)
+			.withHeader("Content-Type", "application/json")
+			.withBody("{\"productId\": 1, \"available\": 10}")));
+
+		long start = System.nanoTime();
+		assertThatExceptionOfType(ResourceAccessException.class).isThrownBy(() -> client.stock(1));
+		Duration elapsed = Duration.ofNanos(System.nanoTime() - start);
+
+		assertThat(elapsed).isBetween(Duration.ofMillis(4900), Duration.ofMillis(5900));
+	}
+
+	@Test
+	void openBreakerFallsBackToUnknownWithoutCallingInventory() {
+		breakers.circuitBreaker("inventory").transitionToOpenState();
+
+		assertThat(adapter.check(1, 1)).isEqualTo(Availability.UNKNOWN);
+		inventory.verify(0, getRequestedFor(urlPathMatching("/api/inventory/.*")));
+	}
+
+	@Test
+	void healthyInventoryAnswersAvailability() {
+		inventory.stubFor(get(urlPathMatching("/api/inventory/1")).willReturn(aResponse()
+			.withHeader("Content-Type", "application/json")
+			.withBody("{\"productId\": 1, \"available\": 1}")));
+
+		assertThat(adapter.check(1, 1)).isEqualTo(Availability.AVAILABLE);
+		assertThat(adapter.check(1, 2)).isEqualTo(Availability.INSUFFICIENT);
 	}
 
 	@Configuration(proxyBeanMethods = false)
