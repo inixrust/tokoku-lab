@@ -9,6 +9,11 @@ spring:
     open-in-view: false
     properties:
       hibernate.generate_statistics: true
+  http:
+    clients:
+      # Connect pendek (fail fast), read sesuai latency downstream (slide 51).
+      connect-timeout: 2s
+      read-timeout: 5s
   data:
     web:
       pageable:

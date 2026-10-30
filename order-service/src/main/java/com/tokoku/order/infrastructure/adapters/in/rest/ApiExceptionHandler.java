@@ -22,6 +22,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -50,6 +51,14 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				"Not enough stock for product " + ex.productId(), "INSUFFICIENT_STOCK");
 		pd.setProperty("productId", ex.productId());
 		return pd;
+	}
+
+	/** Downstream tidak terjangkau (connection refused, timeout): 503, bukan 500. */
+	@ExceptionHandler(ResourceAccessException.class)
+	ProblemDetail handleDownstreamUnavailable(ResourceAccessException ex) {
+		log.warn("Downstream call failed: {}", ex.getMessage());
+		return problem(HttpStatus.SERVICE_UNAVAILABLE, "downstream-unavailable", "Dependency unavailable",
+				"A required service is temporarily unavailable. Please retry later.", "DOWNSTREAM_UNAVAILABLE");
 	}
 
 	/** Invariant domain dilanggar oleh input client (mis. order tanpa item). */

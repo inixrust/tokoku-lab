@@ -5,16 +5,19 @@ import com.tokoku.order.domain.port.out.StockCheck;
 
 import org.springframework.stereotype.Component;
 
-/**
- * L8.1-A: ganti stub ini dengan panggilan ke inventory-service lewat InventoryClient (@HttpExchange).
- * Endpoint inventory: GET /api/inventory/{productId} -> {"productId": 1, "available": 100}
- */
 @Component
 class InventoryStockAdapter implements StockCheck {
 
+	private final InventoryClient inventory;
+
+	InventoryStockAdapter(InventoryClient inventory) {
+		this.inventory = inventory;
+	}
+
 	@Override
 	public Availability check(long productId, int quantity) {
-		return Availability.AVAILABLE;
+		StockResponse stock = inventory.stock(productId);
+		return (stock.available() >= quantity) ? Availability.AVAILABLE : Availability.INSUFFICIENT;
 	}
 
 }
