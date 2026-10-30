@@ -54,10 +54,14 @@ management:
         http.client.requests: true
   server:
     port: 9082
+  # Ekspos seperlunya, jangan "*" (slide 68). Management port terpisah dari port aplikasi.
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
 
 tokoku:
   inventory:
