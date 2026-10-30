@@ -148,6 +148,8 @@ services:
     environment:
       <<: *app-env
       TOKOKU_INVENTORY_BASE_URL: http://inventory-service:8080
+      # L15.1: ubah tanpa edit file, mis. $env:ORDER_POOL_SIZE=50; docker compose ... up -d order-service
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${ORDER_POOL_SIZE:-10}
       # iss tetap http://localhost:8180/realms/tokoku (sama dengan token); kunci diambil lewat jaringan internal.
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/tokoku/protocol/openid-connect/certs
     depends_on:

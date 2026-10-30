@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   L12.2: load test POST /api/payments dengan open model (struktur slide 112).
-  TODO L12.2: (1) schedule ramp-up/steady/ramp-down dengan property rps, rampup, steady, rampdown;
-              (2) Response Assertion status 201 di sampler POST /api/payments.
   Desain/debug di GUI, eksekusi selalu di CLI (lihat loadtest/jmeter/run.ps1).
   Property (-J): host, port, rps, rampup, steady, rampdown (detik), kcHost, kcPort.
 -->
@@ -89,7 +87,7 @@
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="Open Model: POST /api/payments">
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <stringProp name="OpenModelThreadGroup.schedule">rate(1/s) random_arrivals(10 s)</stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(0/s) random_arrivals(${__P(rampup,30)} s) rate(${__P(rps,200)}/s) random_arrivals(${__P(steady,180)} s) rate(${__P(rps,200)}/s) random_arrivals(${__P(rampdown,30)} s) rate(0/s)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"></stringProp>
       </OpenModelThreadGroup>
       <hashTree>
@@ -142,7 +140,18 @@
             </collectionProp>
           </elementProp>
         </HTTPSamplerProxy>
-        <hashTree/>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="status 201">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49587">201</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message">Payment harus 201 (cek token / Idempotency-Key)</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
       </hashTree>
     </hashTree>
   </hashTree>
