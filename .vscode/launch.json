@@ -44,6 +44,14 @@
       "env": {
         "SERVER_PORT": "9090"
       }
+    },
+    {
+      "type": "java",
+      "name": "discovery-server",
+      "request": "launch",
+      "mainClass": "com.tokoku.discovery.DiscoveryServerApplication",
+      "projectName": "discovery-server",
+      "cwd": "${workspaceFolder}/discovery-server"
     }
   ]
 }

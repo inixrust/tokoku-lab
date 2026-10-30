@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: discovery-server
+
+server:
+  port: 8761
+
+eureka:
+  client:
+    # Server tunggal untuk lab: tidak mendaftarkan diri dan tidak mengambil registry dari peer.
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    # Lab: instance yang dimatikan cepat hilang dari registry (default produksi jauh lebih lama).
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000
+    response-cache-update-interval-ms: 3000
