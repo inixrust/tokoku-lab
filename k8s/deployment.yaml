@@ -12,7 +12,8 @@ spec:
       labels:
         app: product-service
     spec:
-      # TODO L21.1: terminationGracePeriodSeconds > preStop + timeout shutdown Spring (slide 157-158).
+      # > preStop 10 s + timeout shutdown Spring 30 s (slide 157-158); lewat dari ini SIGKILL.
+      terminationGracePeriodSeconds: 45
       containers:
         - name: product-service
           # Image lokal: Docker Desktop (mode kubeadm) memakai image store yang sama dengan docker build.
@@ -26,7 +27,26 @@ spec:
           envFrom:
             - configMapRef:
                 name: product-service
-          # TODO L21.1: lifecycle.preStop, livenessProbe, readinessProbe (slide 158).
+          lifecycle:
+            # Beri waktu endpoint keluar dari Service/load balancer sebelum SIGTERM (K8s 1.30+).
+            preStop:
+              sleep:
+                seconds: 10
+          # Startup: beri waktu Spring start tanpa membuat liveness agresif.
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: management }
+            periodSeconds: 2
+            failureThreshold: 60
+          # Liveness: proses sehat? TANPA dependency eksternal (DB mati tidak boleh memicu restart).
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: management }
+            periodSeconds: 10
+            failureThreshold: 3
+          # Readiness: siap menerima traffic? Termasuk DB (grup readiness diatur di ConfigMap).
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: management }
+            periodSeconds: 5
+            failureThreshold: 2
           resources:
             requests: { cpu: 250m, memory: 512Mi }
             limits: { memory: 1Gi }

@@ -13,6 +13,8 @@ data:
   SPRING_CONFIG_IMPORT: optional:configtree:/etc/config/
   SPRING_DATASOURCE_USERNAME: ${db-username}
   SPRING_DATASOURCE_PASSWORD: ${db-password}
+  # Default grup readiness hanya readinessState: tambahkan db. Liveness TIDAK memeriksa db (temuan rencana §2 #11).
+  MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE: readinessState,db
   MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://host.docker.internal:4318/v1/metrics
   MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
 ---
