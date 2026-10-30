@@ -26,6 +26,10 @@ management:
       exposure:
         include: health, info
 
+tokoku:
+  inventory:
+    base-url: http://localhost:8083
+
 logging:
   level:
     # Hibernate 7: ringkasan "Session Metrics" (jumlah JDBC statement) ditulis di level DEBUG.

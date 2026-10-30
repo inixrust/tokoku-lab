@@ -60,3 +60,4 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 1 | [L3.1](docs/labs/L3.1.md) product-service di Boot 4.1 |
 | 2 | [L5.1](docs/labs/L5.1.md) API product berversi + RFC 9457 |
 | 2 | [L6.1](docs/labs/L6.1.md) Persistence order-service |
+| 2 | [L8.1-A](docs/labs/L8.1-A.md) order → inventory via `@HttpExchange` |

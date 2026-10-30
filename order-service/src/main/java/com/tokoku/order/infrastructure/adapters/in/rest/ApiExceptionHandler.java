@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import com.tokoku.order.domain.exception.InsufficientStockException;
 import com.tokoku.order.domain.exception.OrderNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -40,6 +41,14 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		ProblemDetail pd = problem(HttpStatus.NOT_FOUND, "order-not-found", "Order not found",
 				"Order " + ex.orderId() + " was not found", "ORDER_NOT_FOUND");
 		pd.setProperty("orderId", ex.orderId());
+		return pd;
+	}
+
+	@ExceptionHandler(InsufficientStockException.class)
+	ProblemDetail handleInsufficientStock(InsufficientStockException ex) {
+		ProblemDetail pd = problem(HttpStatus.CONFLICT, "insufficient-stock", "Insufficient stock",
+				"Not enough stock for product " + ex.productId(), "INSUFFICIENT_STOCK");
+		pd.setProperty("productId", ex.productId());
 		return pd;
 	}
 

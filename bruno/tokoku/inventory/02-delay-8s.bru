@@ -1,0 +1,11 @@
+meta {
+  name: set simulated delay 8s
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{inventoryUrl}}/api/admin/simulated-delay?value=8s
+  body: none
+  auth: none
+}

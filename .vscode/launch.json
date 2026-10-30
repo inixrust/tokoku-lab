@@ -19,6 +19,14 @@
     },
     {
       "type": "java",
+      "name": "inventory-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.inventory.InventoryServiceApplication",
+      "projectName": "inventory-service",
+      "cwd": "${workspaceFolder}/inventory-service"
+    },
+    {
+      "type": "java",
       "name": "product-service (L3.1 override)",
       "request": "launch",
       "mainClass": "com.tokoku.product.ProductServiceApplication",

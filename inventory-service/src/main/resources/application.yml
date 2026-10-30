@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: inventory-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tokoku
+    username: inventory_user
+    password: inventory_pw
+  jpa:
+    open-in-view: false
+
+server:
+  port: 8083
+
+management:
+  server:
+    port: 9083
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+inventory:
+  # Mode lambat untuk lab (L8.1-A, capstone). Bisa juga diubah saat runtime:
+  #   curl.exe -X PUT "localhost:8083/api/admin/simulated-delay?value=8s"
+  simulated-delay: 0s
