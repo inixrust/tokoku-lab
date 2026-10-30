@@ -9,26 +9,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-/**
- * L6.1: adapter persistence. Buat OrderEntity, OrderItemEntity, repository Spring Data,
- * dan mapper entity <-> domain di package ini, lalu implementasikan method di bawah.
- */
 @Component
 class JpaOrderStore implements OrderStore {
 
+	private final OrderJpaRepository repository;
+
+	JpaOrderStore(OrderJpaRepository repository) {
+		this.repository = repository;
+	}
+
 	@Override
 	public Order save(Order order) {
-		throw new UnsupportedOperationException("L6.1: belum diimplementasikan");
+		return OrderMapper.toDomain(repository.save(OrderMapper.toEntity(order)));
 	}
 
 	@Override
 	public Optional<Order> findById(long id) {
-		throw new UnsupportedOperationException("L6.1: belum diimplementasikan");
+		return repository.findById(id).map(OrderMapper::toDomain);
 	}
 
 	@Override
 	public Page<Order> findAll(Pageable pageable) {
-		throw new UnsupportedOperationException("L6.1: belum diimplementasikan");
+		return repository.findAll(pageable).map(OrderMapper::toDomain);
 	}
 
 }

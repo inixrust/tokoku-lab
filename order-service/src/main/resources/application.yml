@@ -1,6 +1,14 @@
 spring:
   application:
     name: order-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tokoku
+    username: order_user
+    password: order_pw
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate.generate_statistics: true
   data:
     web:
       pageable:
@@ -17,3 +25,8 @@ management:
     web:
       exposure:
         include: health, info
+
+logging:
+  level:
+    # Hibernate 7: ringkasan "Session Metrics" (jumlah JDBC statement) ditulis di level DEBUG.
+    org.hibernate.session.metrics: debug
