@@ -8,7 +8,12 @@ spring:
   jpa:
     open-in-view: false
     properties:
-      hibernate.generate_statistics: true
+      hibernate.generate_statistics: true   # lab/test saja
+      # Slide 129: kesalahan performa gagal keras, bukan diam-diam.
+      hibernate.query.fail_on_pagination_over_collection_fetch: true
+      hibernate.jdbc.batch_size: 50
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
   http:
     clients:
       # Connect pendek (fail fast), read sesuai latency downstream (slide 51).

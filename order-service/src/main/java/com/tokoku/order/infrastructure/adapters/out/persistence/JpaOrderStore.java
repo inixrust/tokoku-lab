@@ -1,5 +1,7 @@
 package com.tokoku.order.infrastructure.adapters.out.persistence;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import com.tokoku.order.domain.exception.OrderNotFoundException;
@@ -8,6 +10,7 @@ import com.tokoku.order.domain.model.OrderStatus;
 import com.tokoku.order.domain.port.out.OrderStore;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -37,9 +40,19 @@ class JpaOrderStore implements OrderStore {
 
 	@Override
 	public Page<Order> findAllByCustomer(String customerId, OrderStatus status, Pageable pageable) {
-		Page<OrderEntity> page = (status != null) ? repository.findByCustomerIdAndStatus(customerId, status, pageable)
-				: repository.findByCustomerId(customerId, pageable);
-		return page.map(OrderMapper::toDomain);
+		// Dua tahap (slide 128): halaman ID + count, lalu satu query fetch items. Total 3 query, bukan 1 + N + 1.
+		Page<OrderJpaRepository.IdOnly> ids = (status != null)
+				? repository.findIdsByCustomerIdAndStatus(customerId, status, pageable)
+				: repository.findIdsByCustomerId(customerId, pageable);
+		List<Long> idList = ids.map(OrderJpaRepository.IdOnly::id).getContent();
+		if (idList.isEmpty()) {
+			return new PageImpl<>(List.of(), pageable, ids.getTotalElements());
+		}
+		List<Order> orders = repository.findByIdIn(idList).stream()
+			.sorted(Comparator.comparingInt(entity -> idList.indexOf(entity.getId())))
+			.map(OrderMapper::toDomain)
+			.toList();
+		return new PageImpl<>(orders, pageable, ids.getTotalElements());
 	}
 
 	@Override
