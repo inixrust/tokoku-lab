@@ -1,0 +1,17 @@
+meta {
+  name: list orders
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{orderUrl}}/api/orders
+  body: none
+  auth: none
+}
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: order-service
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+        serialization-mode: via-dto
+
+server:
+  port: 8082
+
+management:
+  server:
+    port: 9082
+  endpoints:
+    web:
+      exposure:
+        include: health, info

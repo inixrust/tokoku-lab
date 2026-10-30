@@ -1,0 +1,27 @@
+meta {
+  name: place order (alice)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{orderUrl}}/api/orders
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "customerId": "7f2c1a4e-0b1d-4c55-9a6e-a11ce0000001",
+    "lines": [
+      { "productId": 1, "quantity": 2 },
+      { "productId": 5, "quantity": 1 }
+    ]
+  }
+}
+
+tests {
+  test("status 201", function() {
+    expect(res.status).to.equal(201);
+  });
+}

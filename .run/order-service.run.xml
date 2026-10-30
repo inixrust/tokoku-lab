@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="order-service" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.tokoku.order.OrderServiceApplication" />
+    <module name="order-service" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/order-service" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
