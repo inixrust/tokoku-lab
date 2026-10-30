@@ -61,3 +61,4 @@ Panduan setiap lab ada di [docs/labs/](docs/labs/).
 | 2 | [L5.1](docs/labs/L5.1.md) API product berversi + RFC 9457 |
 | 2 | [L6.1](docs/labs/L6.1.md) Persistence order-service |
 | 2 | [L8.1-A](docs/labs/L8.1-A.md) order → inventory via `@HttpExchange` |
+| 3 | [L7.1](docs/labs/L7.1.md) Saga order → inventory (outbox, Kafka) |

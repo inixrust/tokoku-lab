@@ -2,7 +2,9 @@ package com.tokoku.order.infrastructure.adapters.out.persistence;
 
 import java.util.Optional;
 
+import com.tokoku.order.domain.exception.OrderNotFoundException;
 import com.tokoku.order.domain.model.Order;
+import com.tokoku.order.domain.model.OrderStatus;
 import com.tokoku.order.domain.port.out.OrderStore;
 
 import org.springframework.data.domain.Page;
@@ -31,6 +33,12 @@ class JpaOrderStore implements OrderStore {
 	@Override
 	public Page<Order> findAll(Pageable pageable) {
 		return repository.findAll(pageable).map(OrderMapper::toDomain);
+	}
+
+	@Override
+	public void updateStatus(long orderId, OrderStatus status) {
+		OrderEntity entity = repository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+		entity.setStatus(status);
 	}
 
 }

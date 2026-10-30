@@ -23,6 +23,21 @@ class StockEntity {
 	protected StockEntity() {
 	}
 
+	Long getProductId() {
+		return productId;
+	}
+
+	int getAvailable() {
+		return available;
+	}
+
+	void decrement(int quantity) {
+		if (quantity > available) {
+			throw new IllegalStateException("Stock for product " + productId + " would become negative");
+		}
+		available -= quantity;
+	}
+
 	Stock toDomain() {
 		return new Stock(productId, available);
 	}

@@ -20,4 +20,9 @@ public record Order(Long id, String customerId, OrderStatus status, Instant crea
 		return new Order(null, customerId, OrderStatus.PENDING, Instant.now(), lines);
 	}
 
+	/** Saga: hanya order PENDING yang boleh dikonfirmasi atau dibatalkan. */
+	public boolean canMoveTo(OrderStatus next) {
+		return status == OrderStatus.PENDING && next != OrderStatus.PENDING;
+	}
+
 }
