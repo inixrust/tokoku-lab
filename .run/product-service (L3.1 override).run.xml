@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="product-service (L3.1 override)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.tokoku.product.ProductServiceApplication" />
+    <module name="product-service" />
+    <option name="PROGRAM_PARAMETERS" value="--server.port=7070" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/product-service" />
+    <envs>
+      <env name="SERVER_PORT" value="9090" />
+    </envs>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

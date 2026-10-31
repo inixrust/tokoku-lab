@@ -1,0 +1,29 @@
+meta {
+  name: 400 body invalid
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{productUrl}}/api/products
+  body: json
+  auth: none
+}
+
+headers {
+  API-Version: 1
+}
+
+body:json {
+  { "sku": "", "name": "Kopi", "price": -1 }
+}
+
+tests {
+  test("status 400", function() {
+    expect(res.status).to.equal(400);
+  });
+  test("application/problem+json dengan status = status HTTP", function() {
+    expect(res.headers['content-type']).to.contain('application/problem+json');
+    expect(res.body.status).to.equal(res.status);
+  });
+}

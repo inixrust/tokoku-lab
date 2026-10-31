@@ -1,0 +1,9 @@
+{
+  // JDK: ekstensi Java VS Code mendeteksi otomatis JAVA_HOME (harus JDK 21) dan JDK di lokasi standar
+  // (C:\Program Files\Eclipse Adoptium, C:\Program Files\Java). Path sengaja tidak ditulis di sini karena versi
+  // patch berbeda di setiap laptop. Bila perlu JDK 25 di VS Code, tambahkan di User Settings (bukan di repo):
+  //   "java.configuration.runtimes": [{ "name": "JavaSE-25", "path": "C:\Program Files\Eclipse Adoptium\jdk-25..." }]
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "disabled",
+  "files.exclude": { "**/target": true }
+}

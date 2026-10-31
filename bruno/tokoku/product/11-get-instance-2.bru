@@ -1,0 +1,19 @@
+meta {
+  name: GET product 1 dari instance kedua (8091)
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{productUrl2}}/api/products/1
+  body: none
+  auth: none
+}
+
+headers {
+  API-Version: 1
+}
+
+docs {
+  L17.1: setelah PUT di 8081, apakah harga di 8091 sudah berubah? Dengan Caffeine: belum (stale) sampai TTL.
+}

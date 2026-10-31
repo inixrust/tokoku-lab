@@ -1,0 +1,23 @@
+meta {
+  name: 400 tanpa header API-Version
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{productUrl}}/api/products/1
+  body: none
+  auth: none
+}
+
+
+
+tests {
+  test("status 400", function() {
+    expect(res.status).to.equal(400);
+  });
+  test("application/problem+json dengan status = status HTTP", function() {
+    expect(res.headers['content-type']).to.contain('application/problem+json');
+    expect(res.body.status).to.equal(res.status);
+  });
+}

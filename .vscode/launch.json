@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "product-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.product.ProductServiceApplication",
+      "projectName": "product-service",
+      "cwd": "${workspaceFolder}/product-service"
+    },
+    {
+      "type": "java",
+      "name": "order-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.order.OrderServiceApplication",
+      "projectName": "order-service",
+      "cwd": "${workspaceFolder}/order-service"
+    },
+    {
+      "type": "java",
+      "name": "inventory-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.inventory.InventoryServiceApplication",
+      "projectName": "inventory-service",
+      "cwd": "${workspaceFolder}/inventory-service"
+    },
+    {
+      "type": "java",
+      "name": "notification-service",
+      "request": "launch",
+      "mainClass": "com.tokoku.notification.NotificationServiceApplication",
+      "projectName": "notification-service",
+      "cwd": "${workspaceFolder}/notification-service"
+    },
+    {
+      "type": "java",
+      "name": "product-service (L3.1 override)",
+      "request": "launch",
+      "mainClass": "com.tokoku.product.ProductServiceApplication",
+      "projectName": "product-service",
+      "cwd": "${workspaceFolder}/product-service",
+      "args": "--server.port=7070",
+      "env": {
+        "SERVER_PORT": "9090"
+      }
+    }
+  ]
+}

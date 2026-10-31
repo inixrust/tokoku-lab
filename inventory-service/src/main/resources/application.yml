@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: inventory-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tokoku
+    username: inventory_user
+    password: inventory_pw
+  jpa:
+    open-in-view: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+    # Observation listener: span consumer melanjutkan trace dari header traceparent (Modul 20).
+    listener:
+      observation-enabled: true
+    consumer:
+      group-id: inventory-service
+      auto-offset-reset: earliest
+
+server:
+  port: 8083
+
+management:
+  # Ekspor OTLP ke grafana/otel-lgtm (compose profil obs). Scaffolding L8.1-B, dibahas di Modul 20.
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+        step: 10s
+  opentelemetry:
+    # Pembeda antar-instance (label instance di Prometheus). HOSTNAME di container, COMPUTERNAME di Windows.
+    resource-attributes:
+      service.instance.id: ${HOSTNAME:${COMPUTERNAME:local}}:${server.port}
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0
+  observations:
+    enable:
+      # Span internal filter Spring Security tidak membantu troubleshooting di kelas.
+      spring.security: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+  server:
+    port: 9083
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+inventory:
+  # Mode lambat untuk lab (L8.1-A, capstone). Bisa juga diubah saat runtime:
+  #   curl.exe -X PUT "localhost:8083/api/admin/simulated-delay?value=8s"
+  simulated-delay: 0s
+  slow-ratio: 0.02
+  slow-delay: 3s

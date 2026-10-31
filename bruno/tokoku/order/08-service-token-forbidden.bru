@@ -1,0 +1,25 @@
+meta {
+  name: 403 token tokoku-loadtest ke order
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{orderUrl}}/api/orders/2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{serviceToken}}
+}
+
+docs {
+  Token client credentials hanya punya scope payments.write, jadi ditolak 403 di endpoint order.
+}
+
+tests {
+  test("403", function() {
+    expect(res.status).to.equal(403);
+  });
+}

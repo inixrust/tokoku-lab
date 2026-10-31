@@ -1,0 +1,23 @@
+meta {
+  name: GET product v1
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{productUrl}}/api/products/1
+  body: none
+  auth: none
+}
+
+headers {
+  API-Version: 1
+}
+
+
+tests {
+  test("status 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+}

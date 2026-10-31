@@ -1,0 +1,28 @@
+meta {
+  name: pay (Idempotency-Key)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{orderUrl}}/api/payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{serviceToken}}
+}
+
+headers {
+  Idempotency-Key: demo-key-001
+}
+
+body:json {
+  { "orderId": 1, "amount": 150000, "method": "CARD" }
+}
+
+docs {
+  Kirim dua kali: response kedua sama persis (header Idempotent-Replayed: true).
+  Ubah amount dengan key yang sama: 422.
+}

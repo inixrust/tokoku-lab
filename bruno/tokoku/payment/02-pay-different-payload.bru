@@ -1,0 +1,29 @@
+meta {
+  name: 422 key sama, payload beda
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{orderUrl}}/api/payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{serviceToken}}
+}
+
+headers {
+  Idempotency-Key: demo-key-001
+}
+
+body:json {
+  { "orderId": 1, "amount": 999, "method": "CARD" }
+}
+
+tests {
+  test("422", function() {
+    expect(res.status).to.equal(422);
+  });
+}

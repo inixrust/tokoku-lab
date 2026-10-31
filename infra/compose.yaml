@@ -1,0 +1,212 @@
+# Infrastruktur TokoKu. Nyalakan per hari sesuai profil (rencana §3.4), contoh:
+#   docker compose -f infra/compose.yaml --profile db up -d
+name: tokoku
+
+# Bagian bersama aplikasi pada mode perf (profil apps, Hari 5-6). Batas cpus/mem_limit tetap agar hasil bisa diulang.
+x-app: &app
+  profiles: [apps]
+  cpus: 2
+  mem_limit: 1g
+  stop_grace_period: 40s
+  environment: &app-env
+    SERVER_PORT: "8080"
+    MANAGEMENT_SERVER_PORT: "8081"
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tokoku
+    SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    SPRING_DATA_REDIS_HOST: redis
+    MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://lgtm:4318/v1/metrics
+    MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://lgtm:4318/v1/traces
+    MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT: http://lgtm:4318/v1/logs
+    # Kosong = default JVM (heap 25% dari limit). Diatur di L13.1 / capstone.
+    JAVA_TOOL_OPTIONS: ""
+  depends_on:
+    postgres:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    profiles: [db]
+    # Dibatasi 2 CPU agar efek ukuran pool terlihat (L15.1, capstone).
+    cpus: 2
+    environment:
+      POSTGRES_DB: tokoku
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+      - ./postgres/reset.sql:/tokoku/reset.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tokoku"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Kafka KRaft single node. Dua listener (rencana §6 L7.1):
+  #   aplikasi di host (mode dev)        -> localhost:9092
+  #   aplikasi di container (mode perf)  -> kafka:29092
+  kafka:
+    image: apache/kafka:4.2.2
+    profiles: [kafka]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: HOST://0.0.0.0:9092,INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: HOST:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  # OTel Collector + Prometheus + Tempo + Loki + Grafana dalam satu container.
+  # Grafana: http://localhost:3000 (admin/admin). OTLP: 4317 (gRPC), 4318 (HTTP).
+  lgtm:
+    image: grafana/otel-lgtm:0.39.0
+    profiles: [obs]
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./grafana/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/tokoku.yaml:ro
+      - ./grafana/dashboards:/tokoku/dashboards:ro
+
+  # L17.1: distributed cache (opsional/demo). Testcontainers hanya untuk test; dua instance aplikasi butuh Redis yang hidup terus.
+  redis:
+    image: redis:7.4-alpine
+    profiles: [cache]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Chaos: proxy di depan inventory-service (yang jalan di host). Atur toxic lewat API 8474,
+  # mis. scripts/chaos.ps1 -Latency 3000
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.13.0
+    profiles: [chaos]
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    ports:
+      - "8474:8474"
+      - "18083:18083"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro
+
+  # Keycloak (realm tokoku diimpor otomatis). Admin console: http://localhost:8180 (admin/admin).
+  # KC_HOSTNAME membuat claim iss selalu http://localhost:8180/realms/tokoku, juga saat diakses dari container
+  # (mode perf memakai jwk-set-uri internal http://keycloak:8080/...).
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.5
+    profiles: [security]
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: http://localhost:8180
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-tokoku.json:/opt/keycloak/data/import/realm-tokoku.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
+  # ---------------------------------------------------------------- mode perf (profil apps)
+  # Build jar dulu: .\mvnw.cmd package -DskipTests, lalu: docker compose ... --profile apps up -d --build
+  product-service:
+    <<: *app
+    build: { context: ../product-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/product-service:perf
+    ports: ["8081:8080", "9081:8081"]
+    environment:
+      <<: *app-env
+      SPRING_DATASOURCE_USERNAME: product_user
+
+  # L17.1: instance kedua product-service (port 8091) untuk mengamati stale data di local cache.
+  product-service-2:
+    <<: *app
+    profiles: [scale]
+    image: tokoku/product-service:perf
+    ports: ["8091:8080", "9091:8081"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  inventory-service:
+    <<: *app
+    build: { context: ../inventory-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/inventory-service:perf
+    ports: ["8083:8080", "9083:8081"]
+
+  order-service:
+    <<: *app
+    build: { context: ../order-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/order-service:perf
+    ports: ["8082:8080", "9082:8081"]
+    environment:
+      <<: *app-env
+      TOKOKU_INVENTORY_BASE_URL: http://inventory-service:8080
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${ORDER_POOL_SIZE:-50}
+      JAVA_TOOL_OPTIONS: "-Xmx1g"
+      # iss tetap http://localhost:8180/realms/tokoku (sama dengan token); kunci diambil lewat jaringan internal.
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/tokoku/protocol/openid-connect/certs
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+      inventory-service: { condition: service_started }
+
+  notification-service:
+    <<: *app
+    cpus: 1
+    mem_limit: 512m
+    build: { context: ../notification-service, dockerfile: ../infra/docker/perf.Dockerfile }
+    image: tokoku/notification-service:perf
+    ports: ["8084:8080", "9084:8081"]
+    depends_on:
+      kafka: { condition: service_healthy }
+
+  # L13.1: product-service di JDK 25 untuk mengukur AOT cache (JEP 483/514/515). Dijalankan lewat scripts/aot-cache.ps1.
+  product-service-jdk25:
+    <<: *app
+    profiles: [aot]
+    build:
+      context: ../product-service
+      dockerfile: ../infra/docker/perf.Dockerfile
+      args: { JDK: "25" }
+    image: tokoku/product-service:jdk25
+    environment:
+      <<: *app-env
+    volumes:
+      - aot:/aot
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  aot:

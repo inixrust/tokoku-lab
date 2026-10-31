@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    # Observation listener: span consumer melanjutkan trace dari header traceparent (Modul 20).
+    listener:
+      observation-enabled: true
+    consumer:
+      group-id: notification-service
+      auto-offset-reset: earliest
+
+server:
+  port: 8084
+
+management:
+  # Ekspor OTLP ke grafana/otel-lgtm (compose profil obs). Scaffolding L8.1-B, dibahas di Modul 20.
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+        step: 10s
+  opentelemetry:
+    # Pembeda antar-instance (label instance di Prometheus). HOSTNAME di container, COMPUTERNAME di Windows.
+    resource-attributes:
+      service.instance.id: ${HOSTNAME:${COMPUTERNAME:local}}:${server.port}
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  server:
+    port: 9084
+  endpoints:
+    web:
+      exposure:
+        include: health, info

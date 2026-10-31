@@ -1,0 +1,110 @@
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tokoku
+    username: order_user
+    password: order_pw
+    hikari:
+      maximum-pool-size: 50
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    show-sql: true
+    properties:
+      hibernate.generate_statistics: true   # lab/test saja
+      # Slide 129: kesalahan performa gagal keras, bukan diam-diam.
+      hibernate.query.fail_on_pagination_over_collection_fetch: true
+      hibernate.jdbc.batch_size: 50
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+  http:
+    clients:
+      imperative:
+        factory: simple
+      connect-timeout: 2s
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Harus sama persis dengan klaim iss di token (KC_HOSTNAME di compose).
+          issuer-uri: http://localhost:8180/realms/tokoku
+          audiences: order-service   # tolak token untuk API lain
+          jws-algorithms: RS256      # tanpa alg none / HMAC
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+    # Observation listener: span consumer melanjutkan trace dari header traceparent (Modul 20).
+    listener:
+      observation-enabled: true
+    consumer:
+      group-id: order-service
+      auto-offset-reset: earliest
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+        serialization-mode: via-dto
+
+server:
+  port: 8082
+
+management:
+  # Ekspor OTLP ke grafana/otel-lgtm (compose profil obs). Scaffolding L8.1-B, dibahas di Modul 20.
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+        step: 10s
+  opentelemetry:
+    # Pembeda antar-instance (label instance di Prometheus). HOSTNAME di container, COMPUTERNAME di Windows.
+    resource-attributes:
+      service.instance.id: ${HOSTNAME:${COMPUTERNAME:local}}:${server.port}
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0
+  observations:
+    enable:
+      # Span internal filter Spring Security tidak membantu troubleshooting di kelas.
+      spring.security: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+  server:
+    port: 9082
+  # Ekspos seperlunya, jangan "*" (slide 68). Management port terpisah dari port aplikasi.
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+tokoku:
+  inventory:
+    # L10.1: lewat Toxiproxy (compose profil chaos) agar latency/gangguan bisa disuntikkan.
+    # Tanpa Toxiproxy: http://localhost:8083
+    base-url: http://localhost:18083
+
+logging:
+  level:
+    # Hibernate 7: ringkasan "Session Metrics" (jumlah JDBC statement) ditulis di level DEBUG.
+    org.hibernate.session.metrics: debug
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    com.tokoku: debug

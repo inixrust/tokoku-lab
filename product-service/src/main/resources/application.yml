@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: product-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tokoku
+    username: product_user
+    password: product_pw
+  jpa:
+    open-in-view: false
+  mvc:
+    apiversion:
+      use:
+        header: API-Version
+      supported: 1, 2
+  cache:
+    type: caffeine   # paksa provider; jangan Simple (tanpa batas) di produksi
+    cache-names: products
+    # recordStats: tanpa ini metric cache.gets (hit/miss) kosong.
+    caffeine.spec: maximumSize=10000,expireAfterWrite=10m,recordStats
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+        serialization-mode: via-dto
+
+server:
+  port: 8081
+
+management:
+  health:
+    redis:
+      enabled: false   # Redis hanya dipakai di profile redis
+  # Ekspor OTLP ke grafana/otel-lgtm (compose profil obs). Scaffolding L8.1-B, dibahas di Modul 20.
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+        step: 10s
+  opentelemetry:
+    # Pembeda antar-instance (label instance di Prometheus). HOSTNAME di container, COMPUTERNAME di Windows.
+    resource-attributes:
+      service.instance.id: ${HOSTNAME:${COMPUTERNAME:local}}:${server.port}
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+  server:
+    port: 9081
+  endpoints:
+    web:
+      exposure:
+        include: health, info, env, configprops
+
+tokoku:
+  inventory:
+    base-url: http://localhost:8083
+    read-timeout: 2s

@@ -1,0 +1,22 @@
+-- ID tetap 1..20: dipakai inventory (stok per product) dan data order.
+INSERT INTO product (id, sku, name, price) VALUES
+    (1,  'KOPI-ARB-250',  'Kopi Arabika Gayo 250 g',        85000),
+    (2,  'KOPI-ROB-250',  'Kopi Robusta Lampung 250 g',     55000),
+    (3,  'TEH-HIJ-100',   'Teh Hijau Melati 100 g',         32000),
+    (4,  'GULA-AREN-500', 'Gula Aren Cair 500 ml',          45000),
+    (5,  'MADU-HTN-350',  'Madu Hutan 350 g',               120000),
+    (6,  'KERIPIK-SKG',   'Keripik Singkong Balado',        18000),
+    (7,  'SAMBAL-BWG',    'Sambal Bawang Botol',            27000),
+    (8,  'RENDANG-KLG',   'Rendang Kaleng 200 g',           65000),
+    (9,  'BERAS-PDN-5',   'Beras Pandan Wangi 5 kg',        89000),
+    (10, 'MINYAK-KLP-1',  'Minyak Kelapa Murni 1 l',        98000),
+    (11, 'TAS-ANYAM-M',   'Tas Anyaman Pandan M',           150000),
+    (12, 'BATIK-TLS-M',   'Kemeja Batik Tulis M',           450000),
+    (13, 'SARUNG-TNN',    'Sarung Tenun Ikat',              275000),
+    (14, 'GELAS-BMB',     'Gelas Bambu Set 4',              60000),
+    (15, 'PIRING-RTN',    'Piring Rotan Set 6',             135000),
+    (16, 'LILIN-AROMA',   'Lilin Aromaterapi Sereh',        40000),
+    (17, 'SABUN-KPI',     'Sabun Kopi Handmade',            25000),
+    (18, 'MINYAK-ATS',    'Minyak Atsiri Cengkeh 10 ml',    35000),
+    (19, 'TUMBLER-STL',   'Tumbler Stainless 500 ml',       110000),
+    (20, 'BUKU-RESEP',    'Buku Resep Nusantara',           95000);

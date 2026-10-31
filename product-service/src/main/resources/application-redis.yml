@@ -1,0 +1,12 @@
+# L17.1 opsional: distributed cache. Jalankan dengan SPRING_PROFILES_ACTIVE=redis (compose profil cache menyalakan Redis).
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost   # mode perf: SPRING_DATA_REDIS_HOST=redis
+
+management:
+  health:
+    redis:
+      enabled: true
