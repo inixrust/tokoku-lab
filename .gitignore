@@ -24,3 +24,6 @@ target/
 *.jfr
 *.hprof
 loadtest/results/
+
+### JMeter (dijalankan dari root repo) ###
+jmeter.log
