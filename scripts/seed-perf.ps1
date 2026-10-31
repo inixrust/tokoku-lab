@@ -7,7 +7,9 @@
 .EXAMPLE
   .\scripts\seed-perf.ps1
 #>
-$ErrorActionPreference = 'Stop'
+# Continue: docker menulis progres ke stderr, dan PowerShell 5.1 menganggapnya error bila output dialihkan.
+# Kegagalan dicek lewat exit code.
+$ErrorActionPreference = 'Continue'
 $compose = Join-Path $PSScriptRoot '..\infra\compose.yaml'
 $sql = Join-Path $PSScriptRoot '..\infra\postgres\seed-perf.sql'
 

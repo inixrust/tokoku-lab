@@ -5,7 +5,9 @@
   git checkout L5.1-solution
   .\scripts\reset-db.ps1
 #>
-$ErrorActionPreference = 'Stop'
+# Continue: docker menulis progres ke stderr, dan PowerShell 5.1 menganggapnya error bila output dialihkan.
+# Kegagalan dicek lewat exit code.
+$ErrorActionPreference = 'Continue'
 $compose = Join-Path $PSScriptRoot '..\infra\compose.yaml'
 
 docker compose -f $compose --profile db up -d --wait postgres
