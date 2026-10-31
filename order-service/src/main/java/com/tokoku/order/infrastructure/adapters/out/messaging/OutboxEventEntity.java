@@ -42,11 +42,15 @@ class OutboxEventEntity {
 
 	private Instant publishedAt;
 
+	/** W3C trace context saat event ditulis (null bila tidak ada span aktif). */
+	@Column(length = 64)
+	private String traceparent;
+
 	protected OutboxEventEntity() {
 	}
 
 	static OutboxEventEntity of(UUID eventId, String aggregateType, String aggregateId, String eventType,
-			String topic, String payload) {
+			String topic, String payload, String traceparent) {
 		OutboxEventEntity entity = new OutboxEventEntity();
 		entity.eventId = eventId;
 		entity.aggregateType = aggregateType;
@@ -55,6 +59,7 @@ class OutboxEventEntity {
 		entity.topic = topic;
 		entity.payload = payload;
 		entity.createdAt = Instant.now();
+		entity.traceparent = traceparent;
 		return entity;
 	}
 
@@ -80,6 +85,10 @@ class OutboxEventEntity {
 
 	String getPayload() {
 		return payload;
+	}
+
+	String getTraceparent() {
+		return traceparent;
 	}
 
 }

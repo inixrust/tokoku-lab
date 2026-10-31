@@ -17,6 +17,7 @@ data:
   MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE: readinessState,db
   MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://host.docker.internal:4318/v1/metrics
   MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
+  MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/logs
 ---
 # Secret lab. Di produksi: secret manager / External Secrets, bukan file di repo.
 apiVersion: v1

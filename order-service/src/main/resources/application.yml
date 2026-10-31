@@ -33,6 +33,9 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       acks: all
+    # Observation listener: span consumer melanjutkan trace dari header traceparent (Modul 20).
+    listener:
+      observation-enabled: true
     consumer:
       group-id: order-service
       auto-offset-reset: earliest
@@ -60,9 +63,17 @@ management:
       export:
         otlp:
           endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
   tracing:
     sampling:
       probability: 1.0
+  observations:
+    enable:
+      # Span internal filter Spring Security tidak membantu troubleshooting di kelas.
+      spring.security: false
   metrics:
     tags:
       application: ${spring.application.name}

@@ -16,9 +16,12 @@ class OutboxOrderEvents implements OrderEvents {
 
 	private final JsonMapper json;
 
-	OutboxOrderEvents(OutboxEventRepository outbox, JsonMapper json) {
+	private final TraceContext trace;
+
+	OutboxOrderEvents(OutboxEventRepository outbox, JsonMapper json, TraceContext trace) {
 		this.outbox = outbox;
 		this.json = json;
+		this.trace = trace;
 	}
 
 	@Override
@@ -26,7 +29,7 @@ class OutboxOrderEvents implements OrderEvents {
 	public void orderPlaced(Order order) {
 		OrderPlaced event = OrderPlaced.from(order);
 		outbox.save(OutboxEventEntity.of(event.eventId(), "Order", String.valueOf(order.id()), OrderPlaced.TYPE,
-				OrderPlaced.TOPIC, json.writeValueAsString(event)));
+				OrderPlaced.TOPIC, json.writeValueAsString(event), trace.currentTraceparent()));
 	}
 
 }
