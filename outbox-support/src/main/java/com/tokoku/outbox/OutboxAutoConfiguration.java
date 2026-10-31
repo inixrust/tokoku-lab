@@ -1,5 +1,9 @@
 package com.tokoku.outbox;
 
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.propagation.Propagator;
+
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -22,8 +26,13 @@ public class OutboxAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	OutboxWriter outboxWriter(JdbcClient jdbc) {
-		return new OutboxWriter(jdbc);
+	OutboxWriter outboxWriter(JdbcClient jdbc, ObjectProvider<Tracer> tracer, ObjectProvider<Propagator> propagator) {
+		Tracer activeTracer = tracer.getIfAvailable();
+		Propagator activePropagator = propagator.getIfAvailable();
+		if (activeTracer == null || activePropagator == null) {
+			return new OutboxWriter(jdbc);
+		}
+		return new OutboxWriter(jdbc, new OutboxTracing(activeTracer, activePropagator));
 	}
 
 	@Bean

@@ -40,6 +40,10 @@ class OutboxRelay {
 					event.getPayload());
 			record.headers().add("eventType", event.getEventType().getBytes(StandardCharsets.UTF_8));
 			record.headers().add("eventId", event.getEventId().toString().getBytes(StandardCharsets.UTF_8));
+			if (event.getTraceparent() != null) {
+				// Trace request asal berlanjut di consumer (listener observation membaca header ini).
+				record.headers().add("traceparent", event.getTraceparent().getBytes(StandardCharsets.UTF_8));
+			}
 			kafka.send(record).get(5, TimeUnit.SECONDS); // ack broker + timeout
 			event.markPublished();
 		}

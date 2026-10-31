@@ -38,7 +38,7 @@ public class OutboxRelay {
 	@Transactional
 	public void relay() throws Exception {
 		List<Row> batch = jdbc.sql("""
-				select id, event_id, aggregate_id, event_type, topic, payload from outbox
+				select id, event_id, aggregate_id, event_type, topic, payload, traceparent from outbox
 				where published_at is null
 				order by id
 				limit :limit
@@ -51,6 +51,9 @@ public class OutboxRelay {
 			ProducerRecord<String, String> record = new ProducerRecord<>(row.topic(), row.aggregateId(), row.payload());
 			record.headers().add("eventType", row.eventType().getBytes(StandardCharsets.UTF_8));
 			record.headers().add("eventId", row.eventId().toString().getBytes(StandardCharsets.UTF_8));
+			if (row.traceparent() != null) {
+				record.headers().add("traceparent", row.traceparent().getBytes(StandardCharsets.UTF_8));
+			}
 			// Tunggu ack broker dengan timeout.
 			kafka.send(record).get(5, TimeUnit.SECONDS);
 			jdbc.sql("update outbox set published_at = now() where id = ?").param(row.id()).update();
@@ -60,7 +63,8 @@ public class OutboxRelay {
 		}
 	}
 
-	record Row(long id, UUID eventId, String aggregateId, String eventType, String topic, String payload) {
+	record Row(long id, UUID eventId, String aggregateId, String eventType, String topic, String payload,
+			String traceparent) {
 	}
 
 }

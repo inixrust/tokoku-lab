@@ -23,6 +23,8 @@
 		<!-- Integrasi Resilience4j untuk Boot 4 belum resmi: pakai core API (slide 5). -->
 		<resilience4j.version>2.4.0</resilience4j.version>
 		<wiremock.version>3.13.2</wiremock.version>
+		<!-- Seri instrumentation yang dibangun di atas OpenTelemetry 1.62.0 (versi yang dikelola Boot 4.1.2). -->
+		<opentelemetry-logback-appender.version>2.28.0-alpha</opentelemetry-logback-appender.version>
 	</properties>
 
 	<modules>
@@ -41,6 +43,11 @@
 				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.opentelemetry.instrumentation</groupId>
+				<artifactId>opentelemetry-logback-appender-1.0</artifactId>
+				<version>${opentelemetry-logback-appender.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.wiremock</groupId>
