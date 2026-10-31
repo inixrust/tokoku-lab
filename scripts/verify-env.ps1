@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Cek kesiapan laptop untuk kelas TokoKu (rencana lab §4.1). Hasil wajib tanpa [FAIL].
+  Cek kesiapan laptop untuk kelas TokoKu (rencana lab bagian 4.1). Hasil wajib tanpa [FAIL].
 .DESCRIPTION
   [OK]   siap
   [WARN] opsional / perlu dicek manual, tidak menghalangi kelas
